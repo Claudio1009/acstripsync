@@ -42,14 +42,14 @@ function Dashboard() {
     const { data: u } = await supabase.auth.getUser();
     const { data, error } = await supabase.from("trips")
       .insert({ name, start_date: start || null, days, organizer_id: u.user!.id }).select().single();
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     qc.invalidateQueries({ queryKey: ["trips"] });
     nav({ to: "/trips/$id", params: { id: data.id } });
   }
   async function join(e: React.FormEvent) {
     e.preventDefault();
     const { data, error } = await supabase.rpc("join_trip", { _code: code });
-    if (error) return toast.error(error.message.includes("Cod") ? "Cod invalid" : error.message);
+    if (error) { toast.error(error.message.includes("Cod") ? "Cod invalid" : error.message); return; }
     qc.invalidateQueries({ queryKey: ["trips"] });
     nav({ to: "/trips/$id", params: { id: data as string } });
   }
