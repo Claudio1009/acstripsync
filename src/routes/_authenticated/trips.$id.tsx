@@ -127,7 +127,7 @@ function GroupTab({ d, refresh }: { d: Data; refresh: () => void }) {
   async function save() {
     const { error } = await supabase.from("trip_members").update({ budget, ...vals, pace, prefs_complete: true })
       .eq("trip_id", d.trip.id).eq("user_id", d.me);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Preferințe salvate");
     refresh();
   }
@@ -143,7 +143,7 @@ function GroupTab({ d, refresh }: { d: Data; refresh: () => void }) {
         {prefFields.map(([k, label]) => (
           <div key={k} className="space-y-2">
             <div className="flex justify-between text-sm"><Label>{label}</Label><span className="font-semibold">{vals[k]}/5</span></div>
-            <Slider min={1} max={5} step={1} value={[vals[k]]} onValueChange={([v]) => setVals({ ...vals, [k]: v })} />
+            <Slider min={1} max={5} step={1} value={[vals[k] ?? 3]} onValueChange={([v]) => setVals({ ...vals, [k]: v ?? 3 })} />
           </div>
         ))}
         <div className="space-y-2">
@@ -202,7 +202,7 @@ function DestTab({ d, isOrg, refresh }: { d: Data; isOrg: boolean; refresh: () =
   }
   async function confirm(rid: string) {
     const { error } = await supabase.from("trips").update({ chosen_recommendation_id: rid, status: "finalizata" }).eq("id", d.trip.id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Destinație confirmată!"); refresh();
   }
   // tie-break: votes, then group score
@@ -318,9 +318,9 @@ function ActTab({ d, refresh }: { d: Data; refresh: () => void }) {
   async function add(aid: string) {
     const a = d.acts.find((x) => x.id === aid)!;
     const used = d.items.filter((i) => i.day === day).reduce((s, i) => s + Number(d.acts.find((x) => x.id === i.activity_id)?.duration_hours ?? 0), 0);
-    if (used + Number(a.duration_hours) > MAX_DAY_HOURS) return toast.error(`Ziua ${day} depășește ${MAX_DAY_HOURS} ore.`);
+    if (used + Number(a.duration_hours) > MAX_DAY_HOURS) { toast.error(`Ziua ${day} depășește ${MAX_DAY_HOURS} ore.`); return; }
     const { error } = await supabase.from("itinerary_items").insert({ trip_id: d.trip.id, activity_id: aid, day, position: d.items.filter((i) => i.day === day).length });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success(`Adăugat în ziua ${day}`); refresh();
   }
 
